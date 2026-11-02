@@ -2,6 +2,7 @@ package ru.siteaudit.siteaudit.audit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.siteaudit.siteaudit.crawler.CrawlResult;
 import ru.siteaudit.siteaudit.crawler.SiteCrawler;
@@ -32,6 +33,7 @@ public class AuditService {
     private final List<Rule> rules;
     private final Clock clock;
 
+    @Autowired
     public AuditService(SiteCrawler crawler, PageParser parser, List<Rule> rules) {
         this(crawler, parser, rules, Clock.systemUTC());
     }
