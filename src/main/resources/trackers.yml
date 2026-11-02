@@ -91,3 +91,11 @@ trackers:
       foreign: true
     # CDN (cdnjs.cloudflare.com, cdn.jsdelivr.net, unpkg.com) намеренно не включены:
     # они получают IP-адрес посетителя, но считать это трансграничной передачей ПДн — спорно, будет много шума.
+
+  # Признаки рекламных/партнёрских ссылок для правила ad-erid (только INFO).
+  # Ссылка считается «похожей на рекламную», если ведёт на домен из domains или содержит один из query-markers.
+  ad-links:
+    domains: [ad.admitad.com, alitems.com, ad.advcake.ru, cityads.ru, actionpay.net, yabs.yandex.ru, an.yandex.ru,
+              ads.adfox.ru, click.mail.ru, go.redav.online, epn.bz, s.click.aliexpress.com]
+    query-markers: [utm_medium=cpa, utm_medium=cpc, utm_medium=affiliate, utm_medium=partner, utm_source=admitad,
+                    utm_campaign=affiliate, aff_id=, affiliate_id=, partner_id=, ref_id=]
