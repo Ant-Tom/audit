@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: site-audit
+  # MVP — консольное приложение. Для веб-режима добавить spring-boot-starter-web и убрать эту строку.
+  main:
+    web-application-type: none
+    banner-mode: off
+  config:
+    import:
+      - classpath:legal.yml
+      - classpath:trackers.yml
+  thymeleaf:
+    check-template-location: false
+
+crawler:
+  # Внутренних страниц помимо главной
+  max-pages: 15
+  # Страниц юридических документов (политика, согласие, cookie, оферта) сверх max-pages
+  max-legal-pages: 5
+  max-sitemap-urls: 500
+  navigation-timeout: 30s
+  # Сколько ждать «тишины в сети» после загрузки: счётчики часто грузятся с задержкой
+  network-idle-timeout: 10s
+  delay-between-requests: 1s
+  retries: 1
+  user-agent: "Mozilla/5.0 (compatible; SiteAuditBot/0.1)"
+  robots-agent: SiteAuditBot
+  respect-robots-txt: true
+  read-sitemap: true
+  browser:
+    headless: true
+    # Путь к Chromium; пусто — браузер, который скачивает Playwright
+    executable-path: ""
+    # Прокси для браузера, например http://127.0.0.1:3128; пусто — без прокси
+    proxy-server: ""
+    proxy-bypass: "localhost,127.0.0.1"
+
+logging:
+  level:
+    root: WARN
+    ru.siteaudit: INFO
+  pattern:
+    console: "%d{HH:mm:ss} %-5level %msg%n"

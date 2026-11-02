@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>ООО «Ромашка» — доставка цветов</title></head>
+<body>
+<header>
+  <a href="/">Главная</a>
+  <a href="/contacts">Контакты</a>
+  <a href="/catalog">Каталог</a>
+</header>
+<main>
+  <h1>Доставка цветов по Москве</h1>
+  <form action="/api/callback" method="post" id="callback">
+    <label for="cb-name">Ваше имя</label>
+    <input id="cb-name" name="form_text_1" type="text">
+    <input name="phone" type="tel" placeholder="+7 (___) ___-__-__">
+    <input name="email" type="email" placeholder="Email">
+    <input type="hidden" name="sessid" value="abc">
+    <label>
+      <input type="checkbox" name="consent" required>
+      Я даю <a href="/soglasie-na-obrabotku-pd">согласие на обработку персональных данных</a>
+    </label>
+    <button type="submit">Отправить</button>
+  </form>
+  <a href="https://market.yandex.ru/store/romashka?erid=2VtzqvXyZ1">Мы на Маркете</a>
+  <a href="https://vk.com/romashka">Мы ВКонтакте</a>
+</main>
+<footer>
+  <a href="/privacy-policy">Политика обработки персональных данных</a>
+  <a href="/cookie-policy">Политика использования файлов cookie</a>
+  <a href="/oferta">Публичная оферта</a>
+</footer>
+<div class="cookie-notice">
+  Мы используем файлы cookie. Продолжая пользоваться сайтом, вы соглашаетесь с
+  <a href="/cookie-policy">политикой использования cookie</a>.
+  <button>Принять</button>
+</div>
+</body>
+</html>
