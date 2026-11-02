@@ -1,0 +1,93 @@
+# Сервисы, запросы к которым ищутся в сетевом трафике страниц.
+#   tracker: true  — счётчик/пиксель/аналитика (правило trackers-before-consent)
+#   foreign: true  — иностранный сервис, признак трансграничной передачи (правило foreign-services)
+#   domains        — хост совпадает с доменом или является его поддоменом;
+#                    запись вида "vk.com/rtrg" дополнительно требует, чтобы путь начинался с /rtrg
+trackers:
+  services:
+    - name: "Яндекс Метрика"
+      domains: [mc.yandex.ru, mc.yandex.com, mc.yandex.by, mc.yandex.kz, mc.webvisor.org, mc.webvisor.com]
+      tracker: true
+      foreign: false
+    - name: "Top@Mail.ru (VK Реклама)"
+      domains: [top-fwz1.mail.ru, top.mail.ru]
+      tracker: true
+      foreign: false
+    - name: "VK Pixel"
+      domains: [vk.com/rtrg, vk.ru/rtrg, vk.com/js/api/openapi.js]
+      tracker: true
+      foreign: false
+    - name: "LiveInternet"
+      domains: [counter.yadro.ru]
+      tracker: true
+      foreign: false
+    - name: "Calltouch"
+      domains: [mod.calltouch.ru]
+      tracker: true
+      foreign: false
+    - name: "Roistat"
+      domains: [cloud.roistat.com]
+      tracker: true
+      foreign: false
+    - name: "CoMagic / UIS"
+      domains: [app.comagic.ru, app.uiscom.ru]
+      tracker: true
+      foreign: false
+    - name: "Google Analytics / Google Tag Manager"
+      domains: [google-analytics.com, analytics.google.com, googletagmanager.com]
+      tracker: true
+      foreign: true
+    - name: "Google Ads / DoubleClick"
+      domains: [googleadservices.com, doubleclick.net, googlesyndication.com]
+      tracker: true
+      foreign: true
+    - name: "Facebook Pixel"
+      domains: [connect.facebook.net, facebook.com/tr]
+      tracker: true
+      foreign: true
+    - name: "TikTok Pixel"
+      domains: [analytics.tiktok.com]
+      tracker: true
+      foreign: true
+    - name: "Hotjar"
+      domains: [hotjar.com, hotjar.io]
+      tracker: true
+      foreign: true
+    - name: "Microsoft Clarity"
+      domains: [clarity.ms]
+      tracker: true
+      foreign: true
+    - name: "Google Fonts"
+      domains: [fonts.googleapis.com, fonts.gstatic.com]
+      tracker: false
+      foreign: true
+    - name: "Google reCAPTCHA"
+      domains: [google.com/recaptcha, gstatic.com/recaptcha, recaptcha.net]
+      tracker: false
+      foreign: true
+    - name: "Google Maps"
+      domains: [maps.googleapis.com, maps.google.com, google.com/maps]
+      tracker: false
+      foreign: true
+    - name: "YouTube"
+      domains: [youtube.com, youtube-nocookie.com, ytimg.com]
+      tracker: false
+      foreign: true
+    - name: "Facebook / Instagram (виджеты)"
+      domains: [facebook.com, facebook.net, instagram.com, cdninstagram.com]
+      tracker: false
+      foreign: true
+    - name: "X (Twitter)"
+      domains: [twitter.com, x.com, twimg.com]
+      tracker: false
+      foreign: true
+    - name: "Intercom"
+      domains: [intercom.io, intercomcdn.com]
+      tracker: false
+      foreign: true
+    - name: "Tawk.to"
+      domains: [tawk.to]
+      tracker: false
+      foreign: true
+    # CDN (cdnjs.cloudflare.com, cdn.jsdelivr.net, unpkg.com) намеренно не включены:
+    # они получают IP-адрес посетителя, но считать это трансграничной передачей ПДн — спорно, будет много шума.
