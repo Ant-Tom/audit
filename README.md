@@ -26,29 +26,92 @@
 | `https` | CRITICAL | Сайт открывается по HTTP или форма отправляет данные по HTTP |
 | `ad-erid` | INFO | Внешние ссылки, похожие на рекламные / партнёрские, без `erid` |
 
-## Требования
+## Установка на компьютер
 
-- Java 21, Maven 3.9+
-- Chromium для Playwright. При первом запуске Playwright скачивает его сам (~150 МБ в `~/.cache/ms-playwright`).
-  Если браузер уже установлен — укажите `PLAYWRIGHT_BROWSERS_PATH` или `crawler.browser.executable-path`.
+Нужны **Java 21** и **Git**. Maven отдельно ставить не нужно: в проекте есть Maven Wrapper (`mvnw`),
+он сам скачает нужную версию Maven при первой сборке.
 
-## Сборка и запуск
+### 1. Установить Java 21 и Git
+
+| ОС | Команды |
+|---|---|
+| Windows (PowerShell) | `winget install EclipseAdoptium.Temurin.21.JDK` и `winget install Git.Git` |
+| macOS | `brew install openjdk@21 git` |
+| Ubuntu / Debian | `sudo apt install openjdk-21-jdk git` |
+
+Проверка: `java -version` должна показать 21. После установки на Windows откройте новое окно терминала.
+
+### 2. Скачать проект
 
 ```bash
-mvn package
+git clone https://github.com/Ant-Tom/audit.git
 ```
+
+```bash
+cd audit
+```
+
+Без Git: кнопка «Code» → «Download ZIP» на странице репозитория.
+
+### 3. Собрать
+
+macOS / Linux:
+
+```bash
+./mvnw package
+```
+
+Windows:
+
+```bash
+mvnw.cmd package
+```
+
+Первая сборка скачивает Maven и зависимости — несколько минут. Попутно прогоняются тесты.
+В конце — `BUILD SUCCESS` и файл `target/site-audit.jar` (~220 МБ: Playwright for Java включает драйвер
+для всех платформ, это ожидаемо). Если Maven уже установлен, можно вызывать `mvn` вместо `./mvnw`.
+
+### 4. Запустить проверку
 
 ```bash
 java -jar target/site-audit.jar https://example.ru --out=./reports
 ```
 
-или без сборки jar:
+При первом запуске Playwright сам скачает Chromium (~150 МБ в `~/.cache/ms-playwright`). В консоли
+появится сводка, в каталоге `reports` — `report.html` (открыть в браузере) и `report.json`.
+
+Запуск без сборки jar:
 
 ```bash
-mvn spring-boot:run -Dspring-boot.run.arguments="https://example.ru --out=./reports"
+./mvnw spring-boot:run -Dspring-boot.run.arguments="https://example.ru --out=./reports"
 ```
 
-Параметры:
+### Демо-сайт
+
+В `docs/example/demo-site` — синтетический сайт, на котором срабатывают почти все проверки. Нужен Python:
+
+```bash
+python3 -m http.server 8765 --directory docs/example/demo-site
+```
+
+Во втором окне терминала:
+
+```bash
+java -jar target/site-audit.jar http://127.0.0.1:8765/ --out=./reports/demo
+```
+
+### Если что-то не работает
+
+| Проблема | Решение |
+|---|---|
+| `java` не найдена | Откройте новое окно терминала; проверьте PATH и JAVA_HOME |
+| Вопросы вместо кириллицы в консоли | `java -Dstdout.encoding=UTF-8 -jar target/site-audit.jar …` |
+| Chromium не скачивается (прокси, корпоративная сеть) | Укажите установленный Chrome: `--crawler.browser.executable-path="C:\Program Files\Google\Chrome\Application\chrome.exe"` (или `PLAYWRIGHT_BROWSERS_PATH`) |
+| Linux: Chromium не запускается, не хватает системных библиотек | `./mvnw exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install-deps chromium"` (нужен sudo) |
+| Сайт медленный, страницы не загружаются | `--crawler.navigation-timeout=60s` |
+| Сборка падает на тестах | Соберите с `-DskipTests` и сообщите об ошибке |
+
+## Параметры запуска
 
 | Параметр | Описание |
 |---|---|
@@ -61,10 +124,6 @@ mvn spring-boot:run -Dspring-boot.run.arguments="https://example.ru --out=./repo
 
 Коды выхода: `0` — проверка выполнена (независимо от числа находок), `1` — не удалось загрузить ни одной
 страницы или сохранить отчёт, `2` — неверные аргументы.
-
-Если в консоли вместо кириллицы знаки вопроса — терминал не в UTF-8; добавьте `-Dstdout.encoding=UTF-8`.
-
-Jar весит ~220 МБ: Playwright for Java включает драйвер для всех платформ. Это ожидаемо.
 
 ## Настройки
 
@@ -184,11 +243,11 @@ ru.siteaudit.siteaudit
 ## Тесты
 
 ```bash
-mvn test                 # юнит-тесты: парсер, правила, отчёты, CLI — без браузера
+./mvnw test                 # юнит-тесты: парсер, правила, отчёты, CLI — без браузера
 ```
 
 ```bash
-mvn test -Pintegration   # плюс интеграционный тест краулера (@Tag("integration")) — нужен Chromium
+./mvnw test -Pintegration   # плюс интеграционный тест краулера (@Tag("integration")) — нужен Chromium
 ```
 
 Интеграционный тест поднимает локальный сайт на `com.sun.net.httpserver.HttpServer` и проверяет:
