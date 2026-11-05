@@ -18,10 +18,11 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Оркестрация аудита: обход → разбор → правила → результат.
- * Единая точка входа для CLI, а в будущем — для REST-контроллера и планировщика.
+ * Единая точка входа для CLI и веб-интерфейса, а в будущем — для планировщика.
  */
 @Service
 public class AuditService {
@@ -47,9 +48,19 @@ public class AuditService {
 
     /** Полный аудит сайта. Возвращает {@link Audit}: результат и снимки страниц (для отладки). */
     public Audit audit(String url) {
+        return audit(url, page -> {
+        });
+    }
+
+    /**
+     * Полный аудит сайта с уведомлением о загружаемых страницах (для показа хода проверки в веб-интерфейсе).
+     *
+     * @param onPageLoad вызывается перед загрузкой каждой страницы, в потоке аудита
+     */
+    public Audit audit(String url, Consumer<String> onPageLoad) {
         Instant started = clock.instant();
         log.info("Аудит {}: правил {}", url, rules.size());
-        CrawlResult crawl = crawler.crawl(url);
+        CrawlResult crawl = crawler.crawl(url, onPageLoad);
 
         List<CrawlWarning> warnings = new ArrayList<>(crawl.warnings());
         List<PageSnapshot> snapshots = new ArrayList<>();

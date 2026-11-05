@@ -1,9 +1,9 @@
 spring:
   application:
     name: site-audit
-  # MVP — консольное приложение. Для веб-режима добавить spring-boot-starter-web и убрать эту строку.
+  # Консольный или веб-режим выбирается в SiteAuditApplication.main по параметру --web,
+  # поэтому spring.main.web-application-type здесь не задаётся.
   main:
-    web-application-type: none
     banner-mode: off
     log-startup-info: false
   config:
@@ -12,6 +12,16 @@ spring:
       - classpath:trackers.yml
   thymeleaf:
     check-template-location: false
+
+# Веб-интерфейс (java -jar site-audit.jar --web). По умолчанию доступен только с этого компьютера:
+# сервис открывает в браузере любой введённый адрес, поэтому выставлять его в сеть без авторизации не стоит.
+server:
+  address: 127.0.0.1
+  port: 8080
+
+web:
+  # Сколько последних проверок держать в памяти (результаты не сохраняются на диск и пропадают при перезапуске)
+  max-jobs: 50
 
 crawler:
   # Внутренних страниц помимо главной
