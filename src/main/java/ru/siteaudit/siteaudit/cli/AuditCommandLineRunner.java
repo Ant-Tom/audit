@@ -8,6 +8,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.stereotype.Component;
 import ru.siteaudit.siteaudit.audit.AuditService;
+import ru.siteaudit.siteaudit.audit.TargetUrl;
 import ru.siteaudit.siteaudit.model.AuditResult;
 import ru.siteaudit.siteaudit.model.Finding;
 import ru.siteaudit.siteaudit.model.Severity;
@@ -16,16 +17,14 @@ import ru.siteaudit.siteaudit.report.ReportWriter;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
  * Запуск аудита из командной строки: {@code java -jar site-audit.jar https://example.ru --out=./reports}.
- * Без URL печатает usage и ничего не проверяет — так в приложение потом можно добавить веб-режим.
+ * Без URL печатает usage и ничего не проверяет. С {@code --web} ничего не делает — работает веб-интерфейс.
  */
 @Component
 public class AuditCommandLineRunner implements ApplicationRunner, ExitCodeGenerator {
@@ -36,16 +35,21 @@ public class AuditCommandLineRunner implements ApplicationRunner, ExitCodeGenera
     static final int EXIT_ERROR = 1;
     static final int EXIT_USAGE = 2;
 
+    /** Параметр запуска веб-интерфейса: {@code java -jar site-audit.jar --web}. */
+    public static final String WEB_OPTION = "web";
+
     static final String USAGE = """
             Автоматическая проверка сайта на признаки нарушений 152-ФЗ и базовых требований к сайтам.
 
             Использование:
               java -jar site-audit.jar <URL> [--out=<каталог>] [--snapshots]
+              java -jar site-audit.jar --web [--server.port=8080]
 
             Параметры:
               <URL>          адрес сайта, например https://example.ru (без схемы будет добавлен https://)
               --out=<путь>   куда сохранить report.json и report.html (по умолчанию ./reports)
               --snapshots    дополнительно сохранить snapshots.json — разобранные страницы (для отладки правил)
+              --web          запустить веб-интерфейс: http://localhost:8080 (проверки — из браузера)
 
             Настройки обхода (число страниц, таймауты, прокси) — в application.yml, их можно переопределить
             параметрами вида --crawler.max-pages=5.
@@ -71,6 +75,9 @@ public class AuditCommandLineRunner implements ApplicationRunner, ExitCodeGenera
 
     @Override
     public void run(ApplicationArguments args) {
+        if (args.containsOption(WEB_OPTION)) {
+            return; // веб-режим: проверки запускаются со страницы, консольный раннер не нужен
+        }
         List<String> positional = args.getNonOptionArgs();
         if (positional.isEmpty() || args.containsOption("help")) {
             out.println(USAGE);
@@ -126,20 +133,7 @@ public class AuditCommandLineRunner implements ApplicationRunner, ExitCodeGenera
     }
 
     static String normalizeUrl(String raw) {
-        String candidate = raw.trim();
-        if (!candidate.toLowerCase(Locale.ROOT).matches("^https?://.*")) {
-            if (candidate.contains("://")) {
-                return null; // ftp:// и прочее
-            }
-            candidate = "https://" + candidate;
-        }
-        try {
-            URI uri = URI.create(candidate);
-            return uri.getHost() == null || !uri.getHost().contains(".") && !uri.getHost().equals("localhost")
-                    ? null : candidate;
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        return TargetUrl.normalize(raw).orElse(null);
     }
 
     private static String firstOption(ApplicationArguments args, String name, String defaultValue) {

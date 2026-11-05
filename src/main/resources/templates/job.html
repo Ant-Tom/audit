@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title th:text="'Проверка ' + ${job.url}">Проверка сайта</title>
+<link rel="stylesheet" href="/app.css">
+<noscript><meta http-equiv="refresh" content="5"></noscript>
+</head>
+<body>
+<main class="wrap">
+
+  <p><a href="/">← Все проверки</a></p>
+
+  <section class="card" aria-live="polite">
+    <div class="progress-head">
+      <div class="spinner" id="spinner" th:unless="${job.status.finished}"></div>
+      <div>
+        <p class="progress-title" id="title" th:text="${status.statusLabel}">Идёт проверка</p>
+        <div class="muted" style="word-break:break-all" th:text="${job.url}">https://example.ru</div>
+      </div>
+    </div>
+
+    <dl class="progress-facts" id="facts">
+      <dt id="queue-label" th:hidden="${status.queuePosition == 0}">Перед вами в очереди</dt>
+      <dd id="queue" th:hidden="${status.queuePosition == 0}" th:text="${status.queuePosition}">0</dd>
+      <dt>Загружено страниц</dt>
+      <dd id="pages" th:text="${status.pagesLoaded}">0</dd>
+      <dt>Сейчас открываю</dt>
+      <dd id="current" th:text="${status.currentPage ?: '—'}">—</dd>
+      <dt>Прошло времени</dt>
+      <dd id="elapsed">—</dd>
+    </dl>
+
+    <div class="error-box" id="error" th:hidden="${status.error == null}">
+      <strong>Проверку не удалось завершить.</strong>
+      <span id="error-text" th:text="${status.error}"></span>
+      <div style="margin-top:8px"><a href="/">Вернуться и попробовать снова</a></div>
+    </div>
+  </section>
+
+  <p class="muted" style="margin-top:16px">
+    Робот делает паузы между страницами, чтобы не нагружать сайт. Страница обновится сама, когда отчёт будет готов.
+  </p>
+
+</main>
+<script th:inline="javascript">
+  (function () {
+    var statusUrl = /*[[@{/audits/{id}/status(id=${job.id})}]]*/ '';
+    var el = function (id) { return document.getElementById(id); };
+    var plural = function (n) { return n % 10 === 1 && n % 100 !== 11 ? 'проверка'
+        : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'проверки' : 'проверок'); };
+    var fmt = function (s) { var m = Math.floor(s / 60), r = s % 60; return m > 0 ? m + ' мин ' + r + ' с' : r + ' с'; };
+
+    function render(s) {
+      el('title').textContent = s.statusLabel;
+      var queued = s.status === 'QUEUED' && s.queuePosition > 0;
+      el('queue-label').hidden = !queued;
+      el('queue').hidden = !queued;
+      el('queue').textContent = s.queuePosition + ' ' + plural(s.queuePosition);
+      el('pages').textContent = s.pagesLoaded;
+      el('current').textContent = s.currentPage || '—';
+      el('elapsed').textContent = s.status === 'QUEUED' ? '—' : fmt(s.elapsedSeconds);
+      if (s.status === 'FAILED') {
+        el('error').hidden = false;
+        el('error-text').textContent = s.error || '';
+        if (el('spinner')) el('spinner').remove();
+      }
+    }
+
+    function poll() {
+      fetch(statusUrl, { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (s) {
+          if (s.status === 'DONE' && s.reportUrl) { window.location.replace(s.reportUrl); return; }
+          render(s);
+          if (s.status !== 'FAILED') setTimeout(poll, 2000);
+        })
+        .catch(function () { setTimeout(poll, 5000); });
+    }
+    poll();
+  })();
+</script>
+</body>
+</html>

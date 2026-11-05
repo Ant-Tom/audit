@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Обходит сайт в headless-браузере: главная, юридические документы и до {@code maxPages} внутренних
@@ -82,7 +83,17 @@ public class SiteCrawler {
     /**
      * Синхронизирован, потому что объекты Playwright не потокобезопасны (см. {@link BrowserConfig}).
      */
-    public synchronized CrawlResult crawl(String startUrl) {
+    public CrawlResult crawl(String startUrl) {
+        return crawl(startUrl, url -> {
+        });
+    }
+
+    /**
+     * То же, что {@link #crawl(String)}, но сообщает о каждой загружаемой странице — для показа хода проверки.
+     *
+     * @param onPageLoad вызывается в потоке обхода перед загрузкой каждой страницы (включая повторы)
+     */
+    public synchronized CrawlResult crawl(String startUrl, Consumer<String> onPageLoad) {
         Browser browser = browserProvider.getObject();
         Browser.NewContextOptions options = new Browser.NewContextOptions()
                 .setUserAgent(properties.userAgent())
@@ -91,7 +102,7 @@ public class SiteCrawler {
                 .setViewportSize(1366, 900);
         try (BrowserContext context = browser.newContext(options)) {
             context.setDefaultNavigationTimeout(properties.navigationTimeout().toMillis());
-            return new Session(context).run(startUrl);
+            return new Session(context, onPageLoad).run(startUrl);
         }
     }
 
@@ -104,6 +115,7 @@ public class SiteCrawler {
     /** Состояние одного обхода. */
     private final class Session {
         private final BrowserContext context;
+        private final Consumer<String> onPageLoad;
         private final List<RawPage> pages = new ArrayList<>();
         private final List<CrawlWarning> warnings = new ArrayList<>();
         private final Set<String> visited = new HashSet<>();
@@ -116,8 +128,9 @@ public class SiteCrawler {
         private RobotsTxt robots = RobotsTxt.allowAll();
         private Duration delay = properties.delayBetweenRequests();
 
-        Session(BrowserContext context) {
+        Session(BrowserContext context, Consumer<String> onPageLoad) {
             this.context = context;
+            this.onPageLoad = onPageLoad;
         }
 
         CrawlResult run(String startUrl) {
@@ -222,6 +235,7 @@ public class SiteCrawler {
                 });
                 try {
                     log.info("Загружаю {}", url);
+                    onPageLoad.accept(url);
                     Response response = page.navigate(url, new Page.NavigateOptions()
                             .setWaitUntil(WaitUntilState.LOAD)
                             .setTimeout(properties.navigationTimeout().toMillis()));

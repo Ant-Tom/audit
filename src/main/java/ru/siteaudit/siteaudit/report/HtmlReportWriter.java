@@ -49,8 +49,20 @@ public class HtmlReportWriter implements ReportWriter {
     }
 
     public String render(AuditResult result) {
+        return render(result, null, null);
+    }
+
+    /**
+     * Отчёт для веб-интерфейса: сверху появляется панель со ссылками. В файловом отчёте её нет.
+     *
+     * @param backUrl ссылка «Новая проверка» или null
+     * @param jsonUrl ссылка на report.json или null
+     */
+    public String render(AuditResult result, String backUrl, String jsonUrl) {
         Context context = new Context(Locale.forLanguageTag("ru"));
         context.setVariable("report", ReportView.of(result, legal));
+        context.setVariable("backUrl", backUrl);
+        context.setVariable("jsonUrl", jsonUrl);
         return engine.process("report", context);
     }
 }
