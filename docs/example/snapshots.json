@@ -1,0 +1,78 @@
+[ {
+  "url" : "http://127.0.0.1:8765/",
+  "requestsBeforeInteraction" : [ "http://127.0.0.1:8765/", "https://fonts.googleapis.com/css2?family=Roboto", "https://mc.yandex.ru/metrika/tag.js", "https://www.googletagmanager.com/gtag/js?id=G-TEST" ],
+  "forms" : [ {
+    "action" : "",
+    "method" : "",
+    "fields" : [ {
+      "name" : "NAME",
+      "type" : "name",
+      "label" : "Ваше имя"
+    }, {
+      "name" : "PHONE",
+      "type" : "phone",
+      "label" : "Телефон"
+    } ],
+    "checkboxes" : [ {
+      "name" : "AGREE",
+      "checked" : true,
+      "labelText" : "Согласен с политикой конфиденциальности",
+      "links" : [ "http://127.0.0.1:8765/policy.html" ]
+    } ]
+  } ],
+  "legalLinks" : [ {
+    "text" : "политикой конфиденциальности",
+    "href" : "http://127.0.0.1:8765/policy.html"
+  } ],
+  "externalLinks" : [ {
+    "text" : "Партнёрская реклама",
+    "href" : "https://ads.example-network.ru/click?utm_source=site"
+  } ],
+  "hasCookieBanner" : false,
+  "visibleText" : "Контакты Каталог Новости Пластиковые окна под ключ Согласен с политикой конфиденциальности Перезвоните мне Партнёрская реклама Политика конфиденциальности"
+}, {
+  "url" : "http://127.0.0.1:8765/policy.html",
+  "requestsBeforeInteraction" : [ "http://127.0.0.1:8765/policy.html" ],
+  "forms" : [ ],
+  "legalLinks" : [ ],
+  "externalLinks" : [ ],
+  "hasCookieBanner" : false,
+  "visibleText" : "Политика конфиденциальности Мы бережно относимся к вашим данным. Оператор: ООО «Демо»."
+}, {
+  "url" : "http://127.0.0.1:8765/contacts.html",
+  "requestsBeforeInteraction" : [ "http://127.0.0.1:8765/contacts.html", "https://mc.yandex.ru/metrika/tag.js" ],
+  "forms" : [ {
+    "action" : "http://demo.local/feedback.php",
+    "method" : "POST",
+    "fields" : [ {
+      "name" : "email",
+      "type" : "email",
+      "label" : "Email"
+    }, {
+      "name" : "msg",
+      "type" : "textarea",
+      "label" : ""
+    } ],
+    "checkboxes" : [ ]
+  } ],
+  "legalLinks" : [ ],
+  "externalLinks" : [ ],
+  "hasCookieBanner" : false,
+  "visibleText" : "Контакты Email Отправить"
+}, {
+  "url" : "http://127.0.0.1:8765/catalog.html",
+  "requestsBeforeInteraction" : [ "http://127.0.0.1:8765/catalog.html" ],
+  "forms" : [ ],
+  "legalLinks" : [ ],
+  "externalLinks" : [ ],
+  "hasCookieBanner" : false,
+  "visibleText" : "ÐšÐ°Ñ‚Ð°Ð»Ð¾Ð³"
+}, {
+  "url" : "http://127.0.0.1:8765/news.html",
+  "requestsBeforeInteraction" : [ "http://127.0.0.1:8765/news.html" ],
+  "forms" : [ ],
+  "legalLinks" : [ ],
+  "externalLinks" : [ ],
+  "hasCookieBanner" : false,
+  "visibleText" : "ÐÐ¾Ð²Ð¾ÑÑ‚Ð¸"
+} ]

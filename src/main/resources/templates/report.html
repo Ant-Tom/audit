@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title th:text="'Отчёт о проверке сайта ' + ${report.targetUrl}">Отчёт о проверке сайта</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5d6676; --line: #e3e6eb;
+    --critical: #c62828; --critical-bg: #fdecea;
+    --warning: #b26a00; --warning-bg: #fff4e0;
+    --info: #1e5fa8; --info-bg: #e8f1fb;
+    --ok: #2e7d32;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.55 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 20px; margin: 36px 0 4px; }
+  h3 { font-size: 17px; margin: 0 0 8px; }
+  a { color: var(--info); word-break: break-all; }
+  .muted { color: var(--muted); }
+  .meta { color: var(--muted); margin-bottom: 24px; }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0 8px; }
+  .tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+          text-decoration: none; color: inherit; display: block; }
+  .tile .num { font-size: 32px; font-weight: 700; line-height: 1.1; }
+  .tile.critical .num { color: var(--critical); }
+  .tile.warning .num { color: var(--warning); }
+  .tile.info .num { color: var(--info); }
+  .note { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--muted);
+          border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
+  .finding { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+             padding: 18px 20px; margin: 12px 0; border-left-width: 5px; }
+  .finding.critical { border-left-color: var(--critical); }
+  .finding.warning { border-left-color: var(--warning); }
+  .finding.info { border-left-color: var(--info); }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .02em;
+           padding: 2px 8px; border-radius: 999px; margin-bottom: 8px; }
+  .badge.critical { background: var(--critical-bg); color: var(--critical); }
+  .badge.warning { background: var(--warning-bg); color: var(--warning); }
+  .badge.info { background: var(--info-bg); color: var(--info); }
+  dl { margin: 12px 0 0; display: grid; grid-template-columns: 150px 1fr; gap: 6px 16px; }
+  dt { color: var(--muted); font-size: 14px; }
+  dd { margin: 0; }
+  .evidence { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--bg);
+              border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; word-break: break-word; }
+  .norm p { margin: 0 0 4px; }
+  .unverified { display: inline-block; font-size: 12px; color: var(--warning); background: var(--warning-bg);
+                border-radius: 4px; padding: 1px 6px; margin-top: 4px; }
+  .rule-id { font-size: 12px; color: var(--muted); }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; margin: 10px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  ul.plain { margin: 8px 0 0; padding-left: 20px; }
+  .webnav { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .webnav a { word-break: normal; text-decoration: none; font-weight: 600; }
+  .disclaimer { margin-top: 40px; padding: 16px 20px; border-radius: 10px; background: #eceef2;
+                color: var(--muted); font-size: 14px; }
+  @media (max-width: 640px) {
+    .summary { grid-template-columns: 1fr; }
+    dl { grid-template-columns: 1fr; }
+    dt { margin-top: 6px; }
+  }
+  @media print { body { background: #fff; } .finding, .tile, details { break-inside: avoid; } .webnav { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="webnav" th:if="${backUrl != null}">
+    <a th:href="${backUrl}" href="/">← Новая проверка</a>
+    <a th:if="${jsonUrl != null}" th:href="${jsonUrl}" href="#">Скачать report.json</a>
+  </nav>
+
+  <h1>Отчёт об автоматической проверке сайта</h1>
+  <div class="meta">
+    <a th:href="${report.targetUrl}" th:text="${report.targetUrl}">https://example.ru</a><br>
+    Проверено: <span th:text="${report.checkedAt}">1 января 2026, 12:00 (МСК)</span> ·
+    страниц просмотрено: <span th:text="${#lists.size(report.pagesScanned)}">0</span>
+  </div>
+
+  <h2>Сводка</h2>
+  <div class="summary">
+    <a class="tile" th:each="g : ${report.groups}" th:classappend="${g.cssClass}" th:href="'#' + ${g.cssClass}">
+      <div class="num" th:text="${g.count}">0</div>
+      <div th:text="${g.label}">Важно</div>
+    </a>
+  </div>
+
+  <div class="note" th:if="${report.totalFindings == 0 and !#lists.isEmpty(report.pagesScanned)}">
+    По проверяемым пунктам признаков возможных нарушений не обнаружено. Это не означает, что сайт полностью
+    соответствует требованиям закона: автоматически проверяется ограниченный набор признаков.
+  </div>
+  <div class="note" th:if="${#lists.isEmpty(report.pagesScanned)}">
+    Не удалось загрузить ни одной страницы сайта, поэтому проверка не выполнена. Подробности — в разделе
+    «Что не удалось проверить».
+  </div>
+
+  <th:block th:each="g : ${report.groups}" th:if="${g.count > 0}">
+    <h2 th:id="${g.cssClass}" th:text="${g.label} + ' (' + ${g.count} + ')'">Важно</h2>
+    <p class="muted" th:text="${g.hint}">Пояснение</p>
+
+    <div class="finding" th:each="item : ${g.items}" th:classappend="${g.cssClass}"
+         th:with="f=${item.finding}, n=${item.norm}">
+      <span class="badge" th:classappend="${g.cssClass}" th:text="${g.label}">Важно</span>
+      <h3 th:text="${f.title}">Заголовок</h3>
+      <p th:text="${f.description}">Описание</p>
+      <dl>
+        <dt>Где обнаружено</dt>
+        <dd><a th:href="${f.pageUrl}" th:text="${f.pageUrl}">https://example.ru/</a></dd>
+
+        <dt>Что именно нашли</dt>
+        <dd><div class="evidence" th:text="${f.evidence}">evidence</div></dd>
+
+        <dt>Что рекомендуем</dt>
+        <dd th:text="${f.recommendation}">Рекомендация</dd>
+
+        <th:block th:if="${n != null}">
+          <dt>Какое требование</dt>
+          <dd class="norm">
+            <p><strong th:text="${n.title}">Требование</strong></p>
+            <p th:text="${n.summary}">Суть</p>
+            <p class="muted" th:text="'Норма: ' + ${n.article}">Норма</p>
+            <p class="muted" th:if="${n.liability != null}" th:text="'Ответственность: ' + ${n.liability}">КоАП</p>
+            <p class="muted" th:if="${n.fineLegalEntity != null}"
+               th:text="'Возможный штраф для организации: ' + ${n.fineLegalEntity}">Штраф</p>
+            <span class="unverified" th:if="${!n.verified}">Сведения о норме и штрафе требуют уточнения</span>
+            <span class="muted" th:if="${n.verified}"
+                  th:text="'Сведения о норме проверены ' + ${#temporals.format(n.verifiedAt, 'dd.MM.yyyy')}">проверено</span>
+          </dd>
+        </th:block>
+      </dl>
+      <div class="rule-id" th:text="'Код проверки: ' + ${f.ruleId}">Код проверки</div>
+    </div>
+  </th:block>
+
+  <h2>Что проверялось</h2>
+  <details>
+    <summary th:text="'Просмотренные страницы (' + ${#lists.size(report.pagesScanned)} + ')'">Просмотренные страницы</summary>
+    <ul class="plain">
+      <li th:each="p : ${report.pagesScanned}"><a th:href="${p}" th:text="${p}">https://example.ru/</a></li>
+    </ul>
+  </details>
+  <details th:if="${!#lists.isEmpty(report.warnings)}">
+    <summary th:text="'Что не удалось проверить (' + ${#lists.size(report.warnings)} + ')'">Что не удалось проверить</summary>
+    <ul class="plain">
+      <li th:each="w : ${report.warnings}">
+        <a th:href="${w.url}" th:text="${w.url}">url</a> — <span th:text="${w.message}">сообщение</span>
+      </li>
+    </ul>
+  </details>
+  <p class="muted">
+    Робот открывал страницы как обычный посетитель и ни на что не нажимал — в том числе не соглашался
+    с cookie. Поэтому все сетевые запросы, указанные в отчёте, сделаны до какого-либо согласия посетителя.
+  </p>
+
+  <div class="disclaimer">
+    <strong>Важно.</strong> Этот отчёт сформирован автоматически и не является юридическим заключением.
+    Программа ищет характерные признаки на ограниченном числе страниц и может как пропустить проблему,
+    так и указать на то, что проблемой не является. Отчёт не подтверждает соответствие сайта требованиям закона
+    и не устанавливает факт нарушения. Сведения о нормах и штрафах приведены для ориентира и могут быть неактуальны.
+    Для принятия решений рекомендуем обратиться к юристу.
+  </div>
+
+</div>
+</body>
+</html>

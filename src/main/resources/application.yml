@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: site-audit
+  # Консольный или веб-режим выбирается в SiteAuditApplication.main по параметру --web,
+  # поэтому spring.main.web-application-type здесь не задаётся.
+  main:
+    banner-mode: off
+    log-startup-info: false
+  config:
+    import:
+      - classpath:legal.yml
+      - classpath:trackers.yml
+  thymeleaf:
+    check-template-location: false
+
+# Веб-интерфейс (java -jar site-audit.jar --web). По умолчанию доступен только с этого компьютера:
+# сервис открывает в браузере любой введённый адрес, поэтому выставлять его в сеть без авторизации не стоит.
+server:
+  address: 127.0.0.1
+  port: 8080
+
+web:
+  # Сколько последних проверок держать в памяти (результаты не сохраняются на диск и пропадают при перезапуске)
+  max-jobs: 50
+
+crawler:
+  # Внутренних страниц помимо главной
+  max-pages: 15
+  # Страниц юридических документов (политика, согласие, cookie, оферта) сверх max-pages
+  max-legal-pages: 5
+  max-sitemap-urls: 500
+  navigation-timeout: 30s
+  # Сколько ждать «тишины в сети» после загрузки: счётчики часто грузятся с задержкой
+  network-idle-timeout: 10s
+  delay-between-requests: 1s
+  retries: 1
+  user-agent: "Mozilla/5.0 (compatible; SiteAuditBot/0.1)"
+  robots-agent: SiteAuditBot
+  respect-robots-txt: true
+  read-sitemap: true
+  browser:
+    headless: true
+    # Путь к Chromium; пусто — браузер, который скачивает Playwright
+    executable-path: ""
+    # Прокси для браузера, например http://127.0.0.1:3128; пусто — без прокси
+    proxy-server: ""
+    proxy-bypass: "localhost,127.0.0.1"
+
+logging:
+  level:
+    root: WARN
+    ru.siteaudit: INFO
+  pattern:
+    console: "%d{HH:mm:ss} %-5level %msg%n"
